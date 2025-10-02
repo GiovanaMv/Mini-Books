@@ -21,15 +21,34 @@ const Titulo = styled.h1`
     cursor: default;
 `;
 
-function Header() {
+const InputBusca = styled.input`
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  width: 250px;
+  text-align: center;
+`;
 
-  return (
-    <HeaderContainer>
-        <Titulo>
-            Mini Books
-        </Titulo>
+
+function Header({
+   onBuscarPorNome } : {
+    onBuscarPorNome: (nome: string) => void;
+  }) {
+    
+
+    return (
+      <HeaderContainer>
+        <Titulo>Mini Books</Titulo>
+      <InputBusca
+        type="text"
+        placeholder="Buscar livro"
+        onChange={(e) => onBuscarPorNome(e.target.value)}
+      />
     </HeaderContainer>
-  )
+  );
 }
+
 
 export default Header

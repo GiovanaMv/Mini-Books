@@ -1,5 +1,7 @@
+import { useEffect, useState, type SetStateAction } from 'react';
 import styled from 'styled-components';
-import './App.css'
+import { fetchBooks } from "./services/api";
+import Header from './components/Header';
 
 const Container = styled.div`
   display: flex;
@@ -31,10 +33,11 @@ const Card = styled.div`
     border-radius: 20px;
   }
 `;
+
 const SecondTittle = styled.h2`
   font-weight: 500;
   font-size: 1.3rem;
-  margin-top: 3px;
+  margin-top: 1rem;
   margin-bottom: 3px;
 `;
 
@@ -42,59 +45,87 @@ const Description = styled.p`
   font-weight: 400;
   margin-top: 3px;
   margin-bottom: 12px;
+  text-align: justify;
+  padding: 6px;
 `;
 
 const Button = styled.a`
   cursor:pointer;
-  font-family: "Inter", sans-serif;
-  background-color: rgba(61, 0, 58, 0.31);
+  text-decoration: none;
+  color: white;
+  background-color: rgba(145, 12, 138, 0.81);
   padding: 12px;
+  margin-top: auto;
   border-radius: 18px;
   font-weight: bold;
+  // transition: transform 0.3s ease;
+  transform: translateY(1px);
+
+  &:hover {
+    transform: translate(-1px);
+    box-shadow: black 2px 8px 13px;
+  }
 `;
 
+type Book = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  link: string;
+};
+
 function App() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const [nomeBusca, setNomeBusca] = useState<string>("");
+
+  useEffect(() => {
+    fetchBooks()
+      .then((data) => {
+        setBooks(data);
+        setCarregando(false);
+      })
+      .catch((err) => {
+        setErro(err.message);
+        setCarregando(false);
+      });
+  }, []);
+
+  const livrosFiltrados =  books.filter((book) =>
+    book.titulo.toLowerCase().startsWith(nomeBusca.toLowerCase())
+  );
+
+  if (carregando) return <p>Carregando...</p>;
+  if (erro) return <p>Erro: {erro}</p>;
 
   return (
-    <Container>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-      <Card>
-        <img src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg" alt="" />
-        <SecondTittle> Nome </SecondTittle>
-        <Description> descrição </Description>
-        <Button>View Details</Button>
-      </Card>
-    </Container>
-  )
+    <>
+     <Header onBuscarPorNome={(nome: SetStateAction<string>) => setNomeBusca(nome)} />
+      {livrosFiltrados.length === 0 ? (
+        <p style={{ textAlign: 'center', fontSize: '1.2rem', marginTop: '2rem' }}>
+          Livro não encontrado <span style={{ fontSize: '1.5rem' }}>😢</span>
+        </p>
+      ) : (
+        <Container>
+          {livrosFiltrados.map((book) => (
+            <Card key={book.id}>
+              <img
+                src="https://i.pinimg.com/736x/2e/d8/82/2ed882694fd3a93d3a96e08c0cf785ee.jpg"
+                alt={book.titulo}
+              />
+              <SecondTittle>{book.titulo}</SecondTittle>
+              <Description>{book.descricao}</Description>
+              <Button target="blank" href={book.link}>
+                Ver detalhes
+              </Button>
+            </Card>
+          ))}
+        </Container>
+      )}
+    </>
+  );
 }
 
 export default App
